@@ -11,7 +11,7 @@ pygame.init()
 
 
 def processEvents():
-    global done, military, font, scrollSpeed
+    global done, military, scrollSpeed
 
     #retrieve event queue
     events = pygame.event.get()
@@ -35,13 +35,14 @@ def processEvents():
 
             # change scroll speed with UP / DOWN
             if event.key == pygame.K_UP:
-                scrollSpeed += 5
+                scrollSpeed += .25
             if event.key == pygame.K_DOWN:
-                scrollSpeed -= 5
+                scrollSpeed -= .25
 
 
                
 def update():
+    global today
     #Query System time
     today = datetime.today()
 
@@ -85,25 +86,29 @@ def clock():
 
     
     #Create render of time
-    timeRen = timeFont.render(time, 1, fg, bg)
+    timeRen = font.render(time, 1, fg, bg)
     
     # place render on screen
-    screen.blit(timeRen,(int((resolution[0]-timeRen.get_width())/2), (int((resolution[1]-timeRen.get_height())/32)-66)))
+    screen.blit(timeRen,(int((resolution[0]-timeRen.get_width())/2), 0))
 
 def announce():
-    global font, resolution, scrollSpeed, offset
+    global font, resolution, scrollSpeed, offset, fps, chSize
     
     #open announcement file
     announcement = open("announcement.txt","r")
 
     text = announcement.read()
     #read file and render each line
-    offset -= scrollSpeed
+    offset -= int(scrollSpeed*resolution[0]/fps)
     for c in text:
-        offset = (offset+font.size(c)[0])%font.size(text)[0]
-        
-        announceRen = font.render(c, 1, fg, bg)
-        screen.blit(announceRen,(offset,(int((resolution[1]-announceRen.get_height())/32)-66+int(timeFont.size('1')[1]*.75))))
+
+        offset += chSize[0]
+        if offset > font.size(text)[0]:
+            offset = offset%font.size(text)[0]
+
+        if c != ' ' and offset-chSize[0] < resolution[0]:
+            announceRen = font.render(c, 1, fg, bg)
+            screen.blit(announceRen,(offset-chSize[0],int(font.size(' ')[1])))
     
     announcement.close()
 
@@ -116,28 +121,30 @@ monitorInfo = pygame.display.Info()
 #globals
 global fg, bg, wincolor
 global resolution
-global font, timeFont
+global font
 global done
 global fps
 global military
 global today
 global scrollSpeed
+global chSize
 global offset
+
 
 #globals initialization
 fg = 250, 240, 230
 bg = 5, 5, 5
 wincolor = 5, 5, 5
 resolution = monitorInfo.current_w,monitorInfo.current_h
-timeFont = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/5))
-font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/3))
+font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/5))
 font.set_bold(1)
 done = False
-fps = 20
+fps = 60
 military = False
 today = datetime.today()
-scrollSpeed = 25
-offset = 0
+scrollSpeed =  1 #screens per second
+chSize = font.size(' ')
+offset = int(resolution[0]/2)
 
 #initialize window
 screen = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
