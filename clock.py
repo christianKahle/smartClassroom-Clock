@@ -11,7 +11,7 @@ pygame.init()
 
 
 def processEvents():
-    global done, military, scrollSpeed
+    global done, military, scrollSpeed, leadZero
 
     #retrieve event queue
     events = pygame.event.get()
@@ -38,11 +38,15 @@ def processEvents():
                 scrollSpeed += .25
             if event.key == pygame.K_DOWN:
                 scrollSpeed -= .25
+            if event.key == pygame.K_z:
+                leadZero = not leadZero
 
 
                
 def update():
     global today
+    if today.minute%30 == 0:
+        updateMessage()
     #Query System time
     today = datetime.today()
 
@@ -55,13 +59,13 @@ def update():
 
 
 def clock():
-    global resolution, font, military, today
+    global resolution, font, military, today, leadZero
     
     #Create time string
     time = ''
     
     #Add hours to time string
-    if today.hour%(12+(military)*12) < 10:
+    if today.hour%(12+(military)*12) < 10 and leadZero:
         time += '0'+str(today.hour%(12+(military)*12))
     else:
         time += str(today.hour%(12+(military)*12))
@@ -92,28 +96,29 @@ def clock():
     screen.blit(timeRen,(int((resolution[0]-timeRen.get_width())/2), 0))
 
 def announce():
-    global font, resolution, scrollSpeed, offset, fps, chSize
+    global font, resolution, scrollSpeed, offset, fps, chSize, announcement, textLength
     
     #open announcement file
-    announcement = open("announcement.txt","r")
-
-    text = announcement.read()
+    
     #read file and render each line
     offset -= int(scrollSpeed*resolution[0]/fps)
-    for c in text:
+    for c in announcement:
 
         offset += chSize[0]
-        if offset > font.size(text)[0]:
-            offset = offset%font.size(text)[0]
+        if offset > textLength:
+            offset %= textLength
 
         if c != ' ' and offset-chSize[0] < resolution[0]:
             announceRen = font.render(c, 1, fg, bg)
             screen.blit(announceRen,(offset-chSize[0],int(font.size(' ')[1])))
-    
-    announcement.close()
 
+def updateMessage():
+    global announcement, textLength
+    a = open("announcement.txt","r")
+    announcement = a.read()+'      '
+    a.close()
 
-
+    textLength = font.size(announcement)[0]
 
 #retrieve screen size information
 monitorInfo = pygame.display.Info()
@@ -124,12 +129,13 @@ global resolution
 global font
 global done
 global fps
-global military
+global military, leadZero
 global today
 global scrollSpeed
 global chSize
 global offset
-
+global announcement
+global textLength
 
 #globals initialization
 fg = 250, 240, 230
@@ -141,10 +147,12 @@ font.set_bold(1)
 done = False
 fps = 60
 military = False
+leadZero = True
 today = datetime.today()
 scrollSpeed =  1 #screens per second
 chSize = font.size(' ')
 offset = int(resolution[0]/2)
+updateMessage()
 
 #initialize window
 screen = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
