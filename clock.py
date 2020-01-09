@@ -44,9 +44,13 @@ def processEvents():
 
                
 def update():
-    global today
-    if today.minute%30 == 0:
-        updateMessage()
+    global today, pendingMessageUpdate
+    if today.minute == 0:
+        if pendingMessageUpdate:
+            updateMessage()
+        pendingMessageUpdate = False
+    else:
+        pendingMessageUpdate = True
     #Query System time
     today = datetime.today()
 
@@ -113,12 +117,13 @@ def announce():
             screen.blit(announceRen,(offset-chSize[0],int(font.size(' ')[1])))
 
 def updateMessage():
-    global announcement, textLength
+    global announcement, textLength, offset
     a = open("announcement.txt","r")
     announcement = a.read()+'      '
     a.close()
 
     textLength = font.size(announcement)[0]
+    offset = 0
 
 #retrieve screen size information
 monitorInfo = pygame.display.Info()
@@ -136,6 +141,7 @@ global chSize
 global offset
 global announcement
 global textLength
+global pendingMessageUpdate
 
 #globals initialization
 fg = 250, 240, 230
@@ -153,6 +159,7 @@ scrollSpeed =  1 #screens per second
 chSize = font.size(' ')
 offset = int(resolution[0]/2)
 updateMessage()
+pendingMessageUpdate = False
 
 #initialize window
 screen = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
