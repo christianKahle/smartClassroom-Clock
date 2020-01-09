@@ -5,13 +5,14 @@ from pygame.locals import *
 from pygame.compat import unichr_, unicode_
 import sys
 import locale
+import re
 
 #Initialize pygame
 pygame.init()
 
 
 def processEvents():
-    global done, military, scrollSpeed, leadZero
+    global done, military, scrollSpeed, leadZero, offset, scroll, wait
 
     #retrieve event queue
     events = pygame.event.get()
@@ -38,8 +39,15 @@ def processEvents():
                 scrollSpeed += .25
             if event.key == pygame.K_DOWN:
                 scrollSpeed -= .25
+            #toggle leading hour zero with Z
             if event.key == pygame.K_z:
                 leadZero = not leadZero
+            #toggle text scrolling / switching with S
+            if event.key == pygame.K_s:
+                if scroll:
+                    wait = time.time()+len(words[0])/scrollSpeed/15
+                scroll = not scroll
+                offset = 0
 
 
                
@@ -57,7 +65,11 @@ def update():
     #fill background
     screen.fill(wincolor)
 
-    announce()
+    if scroll:
+        announce()
+    else:
+        quickAnnounce()
+
     clock()
     
 
@@ -94,18 +106,18 @@ def clock():
 
     
     #Create render of time
-    timeRen = font.render(time, 1, fg, bg)
+    timeRen = timeFont.render(time, 1, fg, bg)
     
     # place render on screen
     screen.blit(timeRen,(int((resolution[0]-timeRen.get_width())/2), 0))
 
 def announce():
-    global font, resolution, scrollSpeed, offset, fps, chSize, announcement, textLength
-    
-    #open announcement file
-    
-    #read file and render each line
+    global font, resolution, scrollSpeed, offset, fps, chSize, tchSize, announcement, textLength
+
+    #change offset every frame to scroll text
     offset -= int(scrollSpeed*resolution[0]/fps)
+
+    #loop through each character
     for c in announcement:
 
         offset += chSize[0]
@@ -114,16 +126,43 @@ def announce():
 
         if c != ' ' and offset-chSize[0] < resolution[0]:
             announceRen = font.render(c, 1, fg, bg)
-            screen.blit(announceRen,(offset-chSize[0],int(font.size(' ')[1])))
+            screen.blit(announceRen,(offset-chSize[0],tchSize[1]))
+        
+def quickAnnounce():
+    global font, resolution, words, offset, frame, wait, scrollSpeed
+    if time.time() > wait:
+        offset = (offset+1)%(len(words))
+        wait = time.time()+len(words[offset])/scrollSpeed/15
+    
+    announceRen = font.render(words[offset], 1, fg, bg)
+    if announceRen.get_width() > resolution[0]:
+        font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/6*resolution[0]/announceRen.get_width()))
+        announceRen = font.render(words[offset], 1, fg, bg)
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]+(chSize[1]-announceRen.get_height())/2))
+        font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/6))
+    else:
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]))
+    
 
 def updateMessage():
-    global announcement, textLength, offset
+    global announcement, textLength, offset, words
+    #open announcement file
     a = open("announcement.txt","r")
+    # save text to string
     announcement = a.read()+'      '
+    #close announcement file
     a.close()
 
+    #calculate pixel length of text
     textLength = font.size(announcement)[0]
+
+    #reset to beginning of message
     offset = 0
+
+    #create list of each word
+    words = [word for word in re.split('[ \n]+',announcement)]
+    words += ['          ']
+    
 
 #retrieve screen size information
 monitorInfo = pygame.display.Info()
@@ -131,24 +170,27 @@ monitorInfo = pygame.display.Info()
 #globals
 global fg, bg, wincolor
 global resolution
-global font
+global font, timeFont
 global done
 global fps
 global military, leadZero
 global today
 global scrollSpeed
-global chSize
+global scroll
+global chSize, tchSize
 global offset
-global announcement
+global announcement, words
 global textLength
 global pendingMessageUpdate
+global wait
 
 #globals initialization
 fg = 250, 240, 230
 bg = 5, 5, 5
 wincolor = 5, 5, 5
 resolution = monitorInfo.current_w,monitorInfo.current_h
-font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/5))
+timeFont = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/5))
+font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/6))
 font.set_bold(1)
 done = False
 fps = 60
@@ -156,10 +198,13 @@ military = False
 leadZero = True
 today = datetime.today()
 scrollSpeed =  1 #screens per second
+scroll = True
 chSize = font.size(' ')
+tchSize = timeFont.size(' ')
 offset = int(resolution[0]/2)
 updateMessage()
 pendingMessageUpdate = False
+wait = time.time()+len(words[0])/scrollSpeed/15
 
 #initialize window
 screen = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
@@ -169,6 +214,7 @@ lastTime = 0.0
 #main loop
 while not done:
 
+    
     #process keyboard and mouse events
     processEvents()
 
