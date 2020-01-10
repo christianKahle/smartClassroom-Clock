@@ -75,16 +75,21 @@ def update():
 
 
 def clock():
-    global resolution, font, military, today, leadZero
+    global resolution, font, military, today, leadZero, tcolor
     
     #Create time string
     time = ''
     
     #Add hours to time string
-    if today.hour%(12+(military)*12) < 10 and leadZero:
-        time += '0'+str(today.hour%(12+(military)*12))
+    if not military:
+        if today.hour%12 == 0:
+            time += '12'
+        elif leadZero and today.hour<10:
+            time += '0'+str(today.hour%12)
+        else:
+            time += str(today.hour%12)
     else:
-        time += str(today.hour%(12+(military)*12))
+        time += str(today.hour)
         
     #Add Flashing colon
     if today.second%2:
@@ -99,20 +104,20 @@ def clock():
         time += str(today.minute)
     #If using 12-hour clock, append AM/PM
     if not military:   
-        if today.hour > 12:
+        if today.hour > 11:
             time += ' PM'
         else:
             time += ' AM'
 
     
     #Create render of time
-    timeRen = timeFont.render(time, 1, fg, bg)
+    timeRen = timeFont.render(time, 1, tcolor, bg)
     
     # place render on screen
     screen.blit(timeRen,(int((resolution[0]-timeRen.get_width())/2), 0))
 
 def announce():
-    global font, resolution, scrollSpeed, offset, fps, chSize, tchSize, announcement, textLength
+    global font, resolution, scrollSpeed, offset, fps, chSize, tchSize, announcement, textLength, acolor
 
     #change offset every frame to scroll text
     offset -= int(scrollSpeed*resolution[0]/fps)
@@ -125,19 +130,19 @@ def announce():
             offset %= textLength
 
         if c != ' ' and offset-chSize[0] < resolution[0]:
-            announceRen = font.render(c, 1, fg, bg)
+            announceRen = font.render(c, 1, acolor, bg)
             screen.blit(announceRen,(offset-chSize[0],tchSize[1]))
         
 def quickAnnounce():
-    global font, resolution, words, offset, frame, wait, scrollSpeed, fontFile
+    global font, resolution, words, offset, frame, wait, scrollSpeed, fontFile, acolor
     if time.time() > wait:
         offset = (offset+1)%(len(words))
         wait = time.time()+len(words[offset])/scrollSpeed/15
     
-    announceRen = font.render(words[offset], 1, fg, bg)
+    announceRen = font.render(words[offset], 1, acolor, bg)
     if announceRen.get_width() > resolution[0]:
         font = pygame.font.Font(fontFile, int(resolution[0]/6*resolution[0]/announceRen.get_width()))
-        announceRen = font.render(words[offset], 1, fg, bg)
+        announceRen = font.render(words[offset], 1, acolor, bg)
         screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]+(chSize[1]-announceRen.get_height())/2))
         font = pygame.font.Font(fontFile, int(resolution[0]/6))
     else:
@@ -169,7 +174,7 @@ monitorInfo = pygame.display.Info()
 
 #globals
 global fontFile
-global fg, bg, wincolor
+global tcolor, acolor, bg, wincolor
 global resolution
 global font, timeFont
 global done
@@ -187,9 +192,9 @@ global wait
 
 #globals initialization
 fontFile = 'Roboto_Mono/RobotoMono-Bold.ttf'
-fg = 250, 240, 230
-bg = 5, 5, 5
-wincolor = 5, 5, 5
+tcolor = 250, 240, 230
+acolor = 250, 240, 230
+wincolor = bg = 5, 5, 5
 resolution = monitorInfo.current_w,monitorInfo.current_h
 timeFont = pygame.font.Font(fontFile, int(resolution[0]/5))
 font = pygame.font.Font(fontFile, int(resolution[0]/6))
