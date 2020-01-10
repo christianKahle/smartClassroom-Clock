@@ -84,7 +84,7 @@ def clock():
     if not military:
         if today.hour%12 == 0:
             time += '12'
-        elif leadZero and today.hour<10:
+        elif leadZero and today.hour%12<10:
             time += '0'+str(today.hour%12)
         else:
             time += str(today.hour%12)
