@@ -129,17 +129,17 @@ def announce():
             screen.blit(announceRen,(offset-chSize[0],tchSize[1]))
         
 def quickAnnounce():
-    global font, resolution, words, offset, frame, wait, scrollSpeed
+    global font, resolution, words, offset, frame, wait, scrollSpeed, fontFile
     if time.time() > wait:
         offset = (offset+1)%(len(words))
         wait = time.time()+len(words[offset])/scrollSpeed/15
     
     announceRen = font.render(words[offset], 1, fg, bg)
     if announceRen.get_width() > resolution[0]:
-        font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/6*resolution[0]/announceRen.get_width()))
+        font = pygame.font.Font(fontFile, int(resolution[0]/6*resolution[0]/announceRen.get_width()))
         announceRen = font.render(words[offset], 1, fg, bg)
         screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]+(chSize[1]-announceRen.get_height())/2))
-        font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/6))
+        font = pygame.font.Font(fontFile, int(resolution[0]/6))
     else:
         screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]))
     
@@ -168,6 +168,7 @@ def updateMessage():
 monitorInfo = pygame.display.Info()
 
 #globals
+global fontFile = 'Roboto_Mono/RobotoMono-Bold.ttf'
 global fg, bg, wincolor
 global resolution
 global font, timeFont
@@ -189,8 +190,8 @@ fg = 250, 240, 230
 bg = 5, 5, 5
 wincolor = 5, 5, 5
 resolution = monitorInfo.current_w,monitorInfo.current_h
-timeFont = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/5))
-font = pygame.font.Font('Roboto_Mono\\RobotoMono-Bold.ttf', int(resolution[0]/6))
+timeFont = pygame.font.Font(fontFile, int(resolution[0]/5))
+font = pygame.font.Font(fontFile, int(resolution[0]/6))
 font.set_bold(1)
 done = False
 fps = 60
