@@ -168,7 +168,7 @@ def updateMessage():
 monitorInfo = pygame.display.Info()
 
 #globals
-global fontFile = 'Roboto_Mono/RobotoMono-Bold.ttf'
+global fontFile
 global fg, bg, wincolor
 global resolution
 global font, timeFont
@@ -186,6 +186,7 @@ global pendingMessageUpdate
 global wait
 
 #globals initialization
+fontFile = 'Roboto_Mono/RobotoMono-Bold.ttf'
 fg = 250, 240, 230
 bg = 5, 5, 5
 wincolor = 5, 5, 5
