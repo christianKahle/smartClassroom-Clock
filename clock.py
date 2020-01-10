@@ -6,6 +6,8 @@ from pygame.compat import unichr_, unicode_
 import sys
 import locale
 import re
+import os
+
 
 #Initialize pygame
 pygame.init()
@@ -152,7 +154,7 @@ def quickAnnounce():
 def updateMessage():
     global announcement, textLength, offset, words
     #open announcement file
-    a = open("announcement.txt","r")
+    a = open(os.path.join(path,'announcement.txt'),"r")
     # save text to string
     announcement = a.read()+'      '
     #close announcement file
@@ -189,9 +191,11 @@ global announcement, words
 global textLength
 global pendingMessageUpdate
 global wait
+global path
 
 #globals initialization
-fontFile = 'Roboto_Mono/RobotoMono-Bold.ttf'
+path = os.path.dirname(__file__)
+fontFile = os.path.join(path,'Roboto_Mono','RobotoMono-Bold.ttf')
 tcolor = 250, 240, 230
 acolor = 250, 240, 230
 wincolor = bg = 5, 5, 5
