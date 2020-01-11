@@ -220,6 +220,8 @@ wait = time.time()+len(words[0])/scrollSpeed/15
 #initialize window
 screen = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
 
+pygame.mouse.set_visible(False)
+
 lastTime = 0.0
 
 #main loop
@@ -239,5 +241,6 @@ while not done:
     lastTime = time.time()
     
     
-
+pygame.mouse.set_visible(True)
 pygame.display.quit()
+quit()
