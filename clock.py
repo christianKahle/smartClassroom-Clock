@@ -3,15 +3,11 @@ from datetime import datetime
 import time
 from pygame.locals import *
 from pygame.compat import unichr_, unicode_
-import sys
-import locale
-import re
-import os
-
+import sys , locale, os, re
+import configparser
 
 #Initialize pygame
 pygame.init()
-
 
 def processEvents():
     global done, military, scrollSpeed, leadZero, offset, scroll, wait
@@ -38,9 +34,10 @@ def processEvents():
 
             # change scroll speed with UP / DOWN
             if event.key == pygame.K_UP:
-                scrollSpeed += .25
+                scrollSpeed += .1
             if event.key == pygame.K_DOWN:
-                scrollSpeed -= .25
+                if scrollSpeed != .1:
+                    scrollSpeed -= .1
             #toggle leading hour zero with Z
             if event.key == pygame.K_z:
                 leadZero = not leadZero
@@ -50,8 +47,6 @@ def processEvents():
                     wait = time.time()+len(words[0])/scrollSpeed/15
                 scroll = not scroll
                 offset = 0
-
-
                
 def update():
     global today, pendingMessageUpdate
@@ -65,7 +60,7 @@ def update():
     today = datetime.today()
 
     #fill background
-    screen.fill(wincolor)
+    screen.fill(bg)
 
     if scroll:
         announce()
@@ -74,8 +69,6 @@ def update():
 
     clock()
     
-
-
 def clock():
     global resolution, font, military, today, leadZero, tcolor
     
@@ -111,7 +104,6 @@ def clock():
         else:
             time += ' AM'
 
-    
     #Create render of time
     timeRen = timeFont.render(time, 1, tcolor, bg)
     
@@ -150,7 +142,6 @@ def quickAnnounce():
     else:
         screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]))
     
-
 def updateMessage():
     global announcement, textLength, offset, words
     #open announcement file
@@ -170,13 +161,12 @@ def updateMessage():
     words = [word for word in re.split('[ \n]+',announcement)]
     words += ['          ']
     
-
 #retrieve screen size information
 monitorInfo = pygame.display.Info()
 
 #globals
 global fontFile
-global tcolor, acolor, bg, wincolor
+global tcolor, acolor, bg, bg
 global resolution
 global font, timeFont
 global done
@@ -193,23 +183,26 @@ global pendingMessageUpdate
 global wait
 global path
 
-#globals initialization
+#config loading and global initialization
+
 path = os.path.dirname(__file__)
+config = configparser.ConfigParser()
+config.read(os.path.join(path,'config.ini'))
 fontFile = os.path.join(path,'Roboto_Mono','RobotoMono-Bold.ttf')
-tcolor = 250, 240, 230
-acolor = 250, 240, 230
-wincolor = bg = 5, 5, 5
+tcolor = [int(c) for c in config['DEFAULT']['time_color'].split(',')]
+acolor = [int(c) for c in config['DEFAULT']['announcement_color'].split(',')] 
+bg = [int(c) for c in config['DEFAULT']['background_color'].split(',')]
 resolution = monitorInfo.current_w,monitorInfo.current_h
 timeFont = pygame.font.Font(fontFile, int(resolution[0]/5))
 font = pygame.font.Font(fontFile, int(resolution[0]/6))
 font.set_bold(1)
 done = False
-fps = 60
-military = False
-leadZero = True
+fps = int(config['DEFAULT']['frames_per_second'])
+military = bool(int(config['DEFAULT']['military_time']))
+leadZero = bool(int(config['DEFAULT']['leading_zero']))
 today = datetime.today()
 scrollSpeed =  1 #screens per second
-scroll = True
+scroll = bool(int(config['DEFAULT']['scroll_text']))
 chSize = font.size(' ')
 tchSize = timeFont.size(' ')
 offset = int(resolution[0]/2)
