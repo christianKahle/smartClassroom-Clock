@@ -137,7 +137,7 @@ def quickAnnounce():
     if announceRen.get_width() > resolution[0]:
         font = pygame.font.Font(fontFile, int(resolution[0]/6*resolution[0]/announceRen.get_width()))
         announceRen = font.render(words[offset], 1, acolor, bg)
-        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]+(chSize[1]-announceRen.get_height())/2))
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]+int((chSize[1]-announceRen.get_height())/2)))
         font = pygame.font.Font(fontFile, int(resolution[0]/6))
     else:
         screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]))
