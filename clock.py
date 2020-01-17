@@ -5,6 +5,7 @@ from pygame.locals import *
 from pygame.compat import unichr_, unicode_
 import sys , locale, os, re
 import configparser
+from locals import *
 
 #Initialize pygame
 pygame.init()
@@ -76,33 +77,17 @@ def clock():
     time = ''
     
     #Add hours to time string
-    if not military:
-        if today.hour%12 == 0:
-            time += '12'
-        elif leadZero and today.hour%12<10:
-            time += '0'+str(today.hour%12)
-        else:
-            time += str(today.hour%12)
-    else:
-        time += str(today.hour)
+    hours = 12*(1+military)
+    time += '0'*(leadZero and today.hour%hours<10)+str((today.hour-1)%hours+1)
         
     #Add Flashing colon
-    if today.second%2:
-        time += ':'
-    else:
-        time += ' '
+    time+= ':'*(today.second%2)+' '*((today.second+1)%2)
         
     #Add minutes to time string
-    if today.minute < 10:
-        time += '0'+str(today.minute)
-    else:
-        time += str(today.minute)
+    time += '0'*(today.minute<10)+str(today.minute)
+
     #If using 12-hour clock, append AM/PM
-    if not military:   
-        if today.hour > 11:
-            time += ' PM'
-        else:
-            time += ' AM'
+    time += (' '+chr(65+15*(today.hour > 11))+'M')*(not military)
 
     #Create render of time
     timeRen = timeFont.render(time, 1, tcolor, bg)
@@ -120,8 +105,7 @@ def announce():
     for c in announcement:
 
         offset += chSize[0]
-        if offset > textLength:
-            offset %= textLength
+        offset %= textLength
 
         if c != ' ' and offset-chSize[0] < resolution[0]:
             announceRen = font.render(c, 1, acolor, bg)
