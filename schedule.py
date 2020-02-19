@@ -64,8 +64,8 @@ class schedule():
     def next_event(self, time):
         evc = self.chronological_events() 
         for e in evc:
+            if time > schedule.event_times(e)[0]:
+                continue
             if time < schedule.event_times(e)[0]:
-                evc.remove(e)
-        if len(evc) == len(self.chronological_events()):
-            return '00:00,00:00,None'
-        return evc[len(evc)-1]
+                return e
+        return '00:00,00:00,None'

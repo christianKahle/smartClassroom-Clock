@@ -232,7 +232,7 @@ def updateMessage():
 
 def showSchedule():
     global font, resolution, Schedule, quarterfont
-    now = datetime.now().time()
+    now = datetime.today().time()
     evs = Schedule.current_events(now)
     stuff = ''
     if len(evs) > 0:
