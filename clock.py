@@ -79,7 +79,7 @@ def processEvents():
                     display = lockdown_alarm
                 else:
                     display = clock
-            if event.key == K_s:
+            if event.key == K_a:
                 showing_schedule = not showing_schedule
                
 def update():
@@ -231,11 +231,11 @@ def updateMessage():
     words += ['          ']
 
 def showSchedule():
-    global font, resolution, Schedule
+    global font, resolution, Schedule, quarterfont
     now = datetime.now().time()
     evs = Schedule.current_events(now)
     stuff = ''
-    if len(evs) != 0:
+    if len(evs) > 0:
         stuff = '  '+evs[0].split(',')[1]
         for e in evs[1:]:
             stuff += '   '+e.split(',')[1]
@@ -243,15 +243,44 @@ def showSchedule():
     else:
         stuff = Schedule.next_event(now).split(',')[0]
 
+    announceRen = quarterfont.render(stuff, 1, acolor, bg)
+    h = max(announceRen.get_height()*1,resolution[1]/6)
+    if announceRen.get_width() > resolution[0]:
+        font = pygame.font.Font(fontFile, int(resolution[0]/6*resolution[0]/announceRen.get_width()))
+        announceRen = font.render(stuff, 1, acolor, bg)
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),resolution[1]-h))
+        font = pygame.font.Font(fontFile, int(resolution[0]/6))
+    else:
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),resolution[1]-h))
+
+    if len(evs) > 0:
+        stuff = 'ends at'
+    else:
+        stuff = 'starts at'
+    announceRen = quarterfont.render(stuff, 1, acolor, bg)
+    h2 = announceRen.get_height()
+    if announceRen.get_width() > resolution[0]:
+        font = pygame.font.Font(fontFile, int(resolution[0]/6*resolution[0]/announceRen.get_width()))
+        announceRen = font.render(stuff, 1, acolor, bg)
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),resolution[1]-h-h2))
+        font = pygame.font.Font(fontFile, int(resolution[0]/6))
+    else:
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),resolution[1]-h-h2))
+
+    if len(evs) > 0:
+        stuff = evs[0].split(',')[2]
+        for e in evs[1:]:
+            stuff += '   '+e.split(',')[2]
+    else:
+        stuff = Schedule.next_event(now).split(',')[2]
     announceRen = font.render(stuff, 1, acolor, bg)
     if announceRen.get_width() > resolution[0]:
         font = pygame.font.Font(fontFile, int(resolution[0]/6*resolution[0]/announceRen.get_width()))
         announceRen = font.render(stuff, 1, acolor, bg)
-        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),resolution[1]-announceRen.get_height()*1.25))
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),resolution[1]-h-h2-announceRen.get_height()))
         font = pygame.font.Font(fontFile, int(resolution[0]/6))
     else:
-        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]))
-    
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),resolution[1]-h-h2-announceRen.get_height()))
     
     
 #retrieve screen size information
@@ -271,7 +300,10 @@ resolution = monitorInfo.current_w,monitorInfo.current_h
 timeFont = pygame.font.Font(fontFile, int(resolution[0]/5))
 font = pygame.font.Font(fontFile, int(resolution[0]/6))
 fullFont = pygame.font.Font(fontFile, int(resolution[1]/2))
+quarterfont = pygame.font.Font(fontFile, int(resolution[0]/16))
 font.set_bold(1)
+fullFont.set_bold(1)
+quarterfont.set_bold(1)
 done = False
 fps = int(config['DEFAULT']['frames_per_second'])
 military = bool(int(config['DEFAULT']['military_time']))
