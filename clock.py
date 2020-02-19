@@ -234,19 +234,25 @@ def showSchedule():
     global font, resolution, Schedule
     now = datetime.now().time()
     evs = Schedule.current_events(now)
+    stuff = ''
     if len(evs) != 0:
-        stuff = evs[0].split(',')[2]
+        stuff = '  '+evs[0].split(',')[1]
+        for e in evs[1:]:
+            stuff += '   '+e.split(',')[1]
+        stuff += '  '
     else:
-        stuff = Schedule.next_event(now).split(',')[2]
+        stuff = Schedule.next_event(now).split(',')[0]
 
     announceRen = font.render(stuff, 1, acolor, bg)
     if announceRen.get_width() > resolution[0]:
         font = pygame.font.Font(fontFile, int(resolution[0]/6*resolution[0]/announceRen.get_width()))
         announceRen = font.render(stuff, 1, acolor, bg)
-        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]+int((chSize[1]-announceRen.get_height())/2)))
+        screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),resolution[1]-announceRen.get_height()*1.25))
         font = pygame.font.Font(fontFile, int(resolution[0]/6))
     else:
         screen.blit(announceRen,(int((resolution[0]-announceRen.get_width())/2),tchSize[1]))
+    
+    
     
 #retrieve screen size information
 monitorInfo = pygame.display.Info()
